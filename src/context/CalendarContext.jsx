@@ -5,6 +5,8 @@ export const CalendarContext = createContext();
 
 const CalendarProvider = ({children}) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
   const [events, setEvents] = useState(loadfromLocal('events') || []);
   const [resources, setResources] = useState(loadfromLocal('resources') || []);
 
@@ -32,6 +34,7 @@ const CalendarProvider = ({children}) => {
   return (
     <CalendarContext.Provider value={{
       currentDate,setCurrentDate,
+      currentMonth,setCurrentMonth,
       events, setEvents, addEvent, updateEvent, deleteEvent,
       resources,setResources, addResource
     }}>
