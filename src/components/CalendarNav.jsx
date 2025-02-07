@@ -26,15 +26,16 @@ const CalendarNav = () => {
   // for month toggle button trio
   const handlePrev = () => {
     const prevMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
-    setCurrentDate(prevMonth);
+    setCurrentMonth(prevMonth);
   }
   const handleNext = () => {
     const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
-    setCurrentDate(nextMonth);
+    setCurrentMonth(nextMonth);
   }
   const handleToday = () => {
-    setCurrentMonth(new Date(date.getFullYear(), date.getMonth(), 1));
-    setCurrentDate(new Date());
+    const today = new Date();
+    setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    setCurrentDate(today);
   };
 
   return (

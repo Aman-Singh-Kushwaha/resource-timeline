@@ -10,10 +10,11 @@ const CalendarDialog = ({isOpen, selectedMonth, onSelectMonth}) => {
       <div className="w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-gray-300 mx-auto"></div>
       <ReactDatePicker
         selected={selectedMonth}
-        dateFormat="MMMM/yyyy"
+        // dateFormat="MMMM/yyyy"
         onChange={(date) => onSelectMonth(date)}
         inline
-        showMonthYearPicker
+        showMonthDropdown
+        showYearDropdown
       />
       
     </div>
