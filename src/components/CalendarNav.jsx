@@ -2,11 +2,11 @@ import React, {useState, useContext} from 'react';
 import { CalendarContext } from '../context/CalendarContext';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import CalendarDialog from './CalenderDialog';
-
+import ResourceDialog from './ResourceDialog';
 
 const CalendarNav = () => {
-  const { currentMonth, setCurrentMonth, setCurrentDate } = useContext (CalendarContext);
+  const { currentMonth, setCurrentMonth, setCurrentDate, addResource } = useContext(CalendarContext);
+  const [isResourceDialogOpen, setIsResourceDialogOpen] = useState(false);
 
   const [isDatepickerOpen, setIsDatepickerOpen] = useState(false);
   const handleMonthClick = () => {
@@ -36,6 +36,11 @@ const CalendarNav = () => {
     const today = new Date();
     setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
     setCurrentDate(today);
+  };
+
+  const handleAddResource = (title) => {
+    addResource(title);
+    setIsResourceDialogOpen(false);
   };
 
   return (
@@ -72,13 +77,19 @@ const CalendarNav = () => {
           <ChevronRightIcon color="rgb(59 130 246)" className="hover:opacity-70" />
         </button>
         <button 
-          onClick={() => console.log("Add Resource clicked")}
+          onClick={() => setIsResourceDialogOpen(true)}
           className="px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700"
         >
           Add Resource
         </button>
       </div>
-      
+      {isResourceDialogOpen && (
+        <ResourceDialog 
+          isOpen={isResourceDialogOpen}
+          onClose={() => setIsResourceDialogOpen(false)}
+          onSubmit={handleAddResource}
+        />
+      )}
     </div>
   );
 };
