@@ -2,6 +2,7 @@ import React, {useState, useContext} from 'react';
 import { CalendarContext } from '../context/CalendarContext';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import CalendarDialog from './CalenderDialog';
 import ResourceDialog from './ResourceDialog';
 
 const CalendarNav = () => {
