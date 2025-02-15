@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { format, getDaysInMonth, isToday } from 'date-fns';
+import { Rnd } from 'react-rnd';
 import { CalendarContext } from '../context/CalendarContext';
 import EventPopup from './EventPopup';
 
@@ -16,11 +17,11 @@ const convertPxToTimeString = (px) => {
 };
 
 const Timeline = () => {
-  const { currentMonth, resources, events, addEvent, deleteEvent } = useContext(CalendarContext);
+  const { currentMonth, resources, events, addEvent, updateEvent, deleteEvent } = useContext(CalendarContext);
   const [dragEvent, setDragEvent] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   
-  // Each day cell is fixed at 96px width.
+  // Each day cell is fixed at 96px width representing a full day (24 hours).
   const dayCellWidth = 96;
   const daysInMonth = getDaysInMonth(currentMonth);
 
@@ -47,8 +48,6 @@ const Timeline = () => {
       start: 0,            // start at left edge (0px)
       width: dayCellWidth, // full day (96px)
       color: getRandomColor(resource),
-      // Using pixel values for start and width.
-      // Full day: start = 0, end = 96 => 0 -> 24 hours.
       startTime: 0,
       endTime: 24,
       month: currentMonth.getMonth(),
@@ -78,10 +77,9 @@ const Timeline = () => {
 
     const handleMouseUp = () => {
       if (currentDrag.width > 10) { // minimal drag threshold
-        // Here, start and width are in px (0 to 96). 
-        // For display, convert px to time (each pixel = 15 min).
-        const startTime = currentDrag.start * 0.25; // in hours
-        const endTime = (currentDrag.start + currentDrag.width) * 0.25; // in hours
+        // Convert px to hours: each px = 0.25 hour.
+        const startTime = currentDrag.start * 0.25;
+        const endTime = (currentDrag.start + currentDrag.width) * 0.25;
         const newEvent = {
           id: Date.now(),
           title: 'New Event',
@@ -90,8 +88,8 @@ const Timeline = () => {
           start: currentDrag.start,
           width: currentDrag.width,
           color: getRandomColor(resource),
-          startTime, // in hours (0 to 24)
-          endTime,   // in hours
+          startTime,
+          endTime,
           month: currentMonth.getMonth(),
           year: currentMonth.getFullYear(),
         };
@@ -148,7 +146,7 @@ const Timeline = () => {
     // Generate day cells.
     for (let day = 1; day <= daysInMonth; day++) {
       const dayIndex = day - 1;
-      // Filter events for this cell – now also checking month and year.
+      // Filter events for this cell – check resource, day, month, and year.
       const cellEvents = events.filter(ev =>
         ev.resource === rowIndex &&
         ev.day === dayIndex &&
@@ -166,26 +164,54 @@ const Timeline = () => {
             const startTimeString = convertPxToTimeString(ev.start);
             const endTimeString = convertPxToTimeString(ev.start + ev.width);
             return (
-              <div
+              <Rnd
                 key={ev.id}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent drag initiation.
-                  setSelectedEvent(ev);
+                // bounds="parent"
+                size={{ width: ev.width, height: '75%' }}
+                position={{ x: ev.start, y: 0 }}
+                enableResizing={{
+                  left: true,
+                  right: true,
+                  top: false,
+                  bottom: false,
+                  topLeft: false,
+                  topRight: false,
+                  bottomLeft: false,
+                  bottomRight: false,
                 }}
-                className="absolute event-block z-20 rounded p-1 text-xs font-medium cursor-pointer"
-                style={{
-                  backgroundColor: ev.color,
-                  left: ev.start,
-                  width: ev.width,
-                  top: 0,
-                  height: '75%'
+                onDragStop={(e, d) => {
+                  const newStart = d.x;
+                  updateEvent({ 
+                    ...ev, 
+                    start: newStart, 
+                    startTime: newStart * 0.25, 
+                    endTime: (newStart + ev.width) * 0.25 
+                  });
                 }}
+                onResizeStop={(e, direction, ref, delta, position) => {
+                  const newWidth = parseFloat(ref.style.width);
+                  updateEvent({ 
+                    ...ev, 
+                    width: newWidth, 
+                    endTime: (ev.start + newWidth) * 0.25 
+                  });
+                }}
+                className="event-block"
               >
-                <div>{ev.title || 'New Event'}</div>
-                <div className="text-[10px]">
-                  {startTimeString} - {endTimeString}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedEvent(ev);
+                  }}
+                  className="w-full h-full cursor-pointer"
+                  style={{ backgroundColor: ev.color }}
+                >
+                  <div className="text-xs font-medium">{ev.title || 'New Event'}</div>
+                  <div className="text-[10px]">
+                    {startTimeString} - {endTimeString}
+                  </div>
                 </div>
-              </div>
+              </Rnd>
             );
           })}
           {dragEvent &&
